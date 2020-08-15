@@ -27,7 +27,7 @@ public class JPushAutoConfiguration {
 	}
 	
 	@Bean
-	public JPushClient jPushClient(JPushClient jPushClient, JPushProperties properties, ClientConfig jPushClientConfig)   {
+	public JPushClient jPushClient(JPushProperties properties, ClientConfig jPushClientConfig)   {
 		// not set proxy
 		if(Objects.isNull(properties.getProxy())) {
 			return new JPushClient(properties.getMasterSecret(), properties.getAppKey(), properties.getProxy(), jPushClientConfig);  
