@@ -15,6 +15,7 @@
  */
 package cn.jpush.spring.boot;
 
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -61,7 +62,7 @@ public class JPushTemplate implements DisposableBean {
 		return builder.build();
     }
 
-    public PushPayload buildPushPayloadForAndroidAndIos(PushObject pushObject) {
+    public PushPayload buildPushPayloadForAndroidAndIos(Audience audience,PushObject pushObject) {
         AndroidNotification.Builder androidBuilder = AndroidNotification.newBuilder();
         IosNotification.Builder iosBuilder = IosNotification.newBuilder();
         if (pushObject.getExtras() != null && pushObject.getExtras().size() > 0) {
@@ -87,9 +88,10 @@ public class JPushTemplate implements DisposableBean {
                 }
             }
         }
+        
         PushPayload payload = PushPayload.newBuilder()
                 .setPlatform(Platform.android_ios()) //推送平台
-                .setAudience(Audience.alias(pushObject.getAlias())) //推送目标
+                .setAudience(audience) //推送目标
                 .setNotification(Notification.newBuilder()
                         .setAlert(pushObject.getAlert()) //通知信息
                         .addPlatformNotification(androidBuilder.build())
@@ -109,9 +111,22 @@ public class JPushTemplate implements DisposableBean {
         return payload;
     }
 
+
     public boolean sendPush(PushObject pushObject) {
+		return this.sendPush(Audience.all(), pushObject);
+    }
+    
+    public boolean sendPush(List<String> alias, PushObject pushObject) {
+		return this.sendPush(Audience.alias(alias), pushObject);
+    }
+    
+    public boolean sendPushByTag(List<String> tags, PushObject pushObject) {
+		return this.sendPush(Audience.tag(tags), pushObject);
+	}
+	
+    public boolean sendPush(Audience audience, PushObject pushObject) {
     	
-        PushPayload payload = buildPushPayloadForAndroidAndIos(pushObject);
+        PushPayload payload = buildPushPayloadForAndroidAndIos(audience, pushObject);
         try {
             PushResult result = jPushClient.sendPush(payload);
             LOG.info("Got result - " + result);
