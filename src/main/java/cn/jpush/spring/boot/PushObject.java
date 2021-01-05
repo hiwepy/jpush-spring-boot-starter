@@ -24,6 +24,11 @@ import lombok.Data;
 public class PushObject {
 
 	/**
+	 * The ID of one application on Local System.
+	 */
+	private String appId;
+
+	/**
 	 * 通知信息
 	 */
 	private String alert;
