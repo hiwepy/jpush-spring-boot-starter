@@ -45,9 +45,9 @@ public class JPushAutoConfiguration {
 		if(!CollectionUtils.isEmpty(properties.getSlaves())) {
 			for (JPushSlaveClientConfig clientConfig : properties.getSlaves()) {
 				if(Objects.isNull(clientConfig.getProxy())) {
-					clients.add(new JPushClientExt(clientConfig.getAppId(), clientConfig.getAppKey(), clientConfig.getSlaveSecret(), clientConfig.getProxy(), jPushClientConfig));
+					clients.add(new JPushClientExt(clientConfig.getAppId(), clientConfig.getAppKey(), clientConfig.getAppSecret(), clientConfig.getProxy(), jPushClientConfig));
 				} else {
-					clients.add(new JPushClientExt(clientConfig.getAppId(), clientConfig.getAppKey(), clientConfig.getSlaveSecret()));  
+					clients.add(new JPushClientExt(clientConfig.getAppId(), clientConfig.getAppKey(), clientConfig.getAppSecret()));  
 				}
 			}
 		}

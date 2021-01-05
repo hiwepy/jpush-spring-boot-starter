@@ -54,7 +54,7 @@ public class JPushProperties {
     	/**
     	 *  API access secret of the appKey.
     	 */
-        private String slaveSecret;
+        private String appSecret;
         
         /**
          * The proxy, if there is no proxy, should be null.
