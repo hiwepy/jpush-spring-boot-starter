@@ -17,36 +17,34 @@ package cn.jpush.spring.boot;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
-
-import com.google.gson.JsonObject;
 
 import cn.jiguang.common.DeviceType;
 import cn.jiguang.common.resp.APIConnectionException;
 import cn.jiguang.common.resp.APIRequestException;
 import cn.jpush.api.JPushClient;
 import cn.jpush.api.push.PushResult;
-import cn.jpush.api.push.model.Message;
-import cn.jpush.api.push.model.Options;
-import cn.jpush.api.push.model.Platform;
 import cn.jpush.api.push.model.PushPayload;
 import cn.jpush.api.push.model.audience.Audience;
-import cn.jpush.api.push.model.notification.AndroidNotification;
-import cn.jpush.api.push.model.notification.IosNotification;
-import cn.jpush.api.push.model.notification.Notification;
-import cn.jpush.api.push.model.notification.PlatformNotification;
 
 public class JPushTemplate implements DisposableBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(JPushTemplate.class);
     private JPushClient jPushClient;
+    private ConcurrentHashMap<String, JPushClientExt> jPushClientMap;
     private boolean production;
 
-    public JPushTemplate(JPushClient jPushClient, boolean prod) {
+    public JPushTemplate(JPushClient jPushClient, List<JPushClientExt> clients, boolean prod) {
         this.jPushClient = jPushClient;
+        this.jPushClientMap = new ConcurrentHashMap<>();
+		for (JPushClientExt jPushClientExt : clients) {
+			this.jPushClientMap.put(jPushClientExt.getAppId(), jPushClientExt);
+		}
         this.production = prod;
     }
 
@@ -54,64 +52,10 @@ public class JPushTemplate implements DisposableBean {
         return jPushClient;
     }
     
-    public Notification buildNotification(Object alert, PlatformNotification... notifications) {
-		Notification.Builder builder = Notification.newBuilder().setAlert(alert);
-		for (PlatformNotification platformNotification : notifications) {
-			builder = builder.addPlatformNotification(platformNotification);
-		}
-		return builder.build();
-    }
-
-    public PushPayload buildPushPayloadForAndroidAndIos(Audience audience,PushObject pushObject) {
-        AndroidNotification.Builder androidBuilder = AndroidNotification.newBuilder();
-        IosNotification.Builder iosBuilder = IosNotification.newBuilder();
-        if (pushObject.getExtras() != null && pushObject.getExtras().size() > 0) {
-            for (Map.Entry<String, Object> entry : pushObject.getExtras().entrySet()) {
-                if (entry.getValue() instanceof Number) {
-                    Number value = (Number) entry.getValue();
-                    androidBuilder.addExtra(entry.getKey(), value);
-                    iosBuilder.addExtra(entry.getKey(), value);
-                } else if (entry.getValue() instanceof String) {
-                    String value = (String) entry.getValue();
-                    androidBuilder.addExtra(entry.getKey(), value);
-                    iosBuilder.addExtra(entry.getKey(), value);
-                } else if (entry.getValue() instanceof Boolean) {
-                    Boolean value = (Boolean) entry.getValue();
-                    androidBuilder.addExtra(entry.getKey(), value);
-                    iosBuilder.addExtra(entry.getKey(), value);
-                } else if (entry.getValue() instanceof JsonObject) {
-                    JsonObject value = (JsonObject) entry.getValue();
-                    androidBuilder.addExtra(entry.getKey(), value);
-                    iosBuilder.addExtra(entry.getKey(), value);
-                } else {
-                    //ignore ...
-                }
-            }
-        }
-        
-        PushPayload payload = PushPayload.newBuilder()
-                .setPlatform(Platform.android_ios()) //推送平台
-                .setAudience(audience) //推送目标
-                .setNotification(Notification.newBuilder()
-                        .setAlert(pushObject.getAlert()) //通知信息
-                        .addPlatformNotification(androidBuilder.build())
-                        .addPlatformNotification(iosBuilder
-                                .incrBadge(1) //角标数字加 1
-                                .setSound(pushObject.getSound()) //通知声音为 "happy"
-                                .build())
-                        .build())
-                .setMessage(Message.newBuilder()
-                        .setMsgContent(pushObject.getMsgContent()) //消息内容
-                        .build())
-                .setOptions(Options.newBuilder()
-                        //设置ios平台环境，true表示推送生产环境，false表示要推送开发环境
-                        .setApnsProduction(production)
-                        .build())
-                .build();
-        return payload;
-    }
-
-
+	public Map<String, JPushClientExt> getjPushClientMap() {
+		return jPushClientMap;
+	}
+    
     public boolean sendPush(PushObject pushObject) {
 		return this.sendPush(Audience.all(), pushObject);
     }
@@ -123,14 +67,14 @@ public class JPushTemplate implements DisposableBean {
     public boolean sendPushByTag(List<String> tags, PushObject pushObject) {
 		return this.sendPush(Audience.tag(tags), pushObject);
 	}
-	
+    
     public boolean sendPush(Audience audience, PushObject pushObject) {
     	
-        PushPayload payload = buildPushPayloadForAndroidAndIos(audience, pushObject);
+        PushPayload payload = JPushNotifications.buildPushPayloadForAndroidAndIos(production, audience, pushObject);
         try {
             PushResult result = jPushClient.sendPush(payload);
             LOG.info("Got result - " + result);
-            return true;
+            return result.isResultOK();
         } catch (APIConnectionException e) {
             LOG.error("Connection error. Should retry later. ", e);
             LOG.error("Sendno: " + payload.getSendno());
@@ -144,6 +88,41 @@ public class JPushTemplate implements DisposableBean {
         }
         return false;
     }
+    
+    public boolean sendPush(String appId, PushObject pushObject) {
+		return this.sendPush(appId, Audience.all(), pushObject);
+    }
+    
+    public boolean sendPush(String appId, List<String> alias, PushObject pushObject) {
+		return this.sendPush(appId, Audience.alias(alias), pushObject);
+    }
+    
+    public boolean sendPushByTag(String appId, List<String> tags, PushObject pushObject) {
+		return this.sendPush(appId, Audience.tag(tags), pushObject);
+	}
+    
+    public boolean sendPush(String appId, Audience audience, PushObject pushObject) {
+    	JPushClient jPushClient = jPushClientMap.get(appId);
+    	if(Objects.nonNull(jPushClient)) {
+    		PushPayload payload = JPushNotifications.buildPushPayloadForAndroidAndIos(production, audience, pushObject);
+	        try {
+	            PushResult result = jPushClient.sendPush(payload);
+	            LOG.info("Got result - " + result);
+	            return result.isResultOK();
+	        } catch (APIConnectionException e) {
+	            LOG.error("Connection error. Should retry later. ", e);
+	            LOG.error("Sendno: " + payload.getSendno());
+	        } catch (APIRequestException e) {
+	            LOG.error("Error response from JPush server. Should review and fix it. ", e);
+	            LOG.info("HTTP Status: " + e.getStatus());
+	            LOG.info("Error Code: " + e.getErrorCode());
+	            LOG.info("Error Message: " + e.getErrorMessage());
+	            LOG.info("Msg ID: " + e.getMsgId());
+	            LOG.error("Sendno: " + payload.getSendno());
+	        }
+    	}
+        return false;
+    }
 
     public void clearAlias(String alias) {
         try {
@@ -155,10 +134,35 @@ public class JPushTemplate implements DisposableBean {
             LOG.error("清理Alias异常", e);
         }
     }
+    
+    public void clearAlias(String appId, String alias) {
+        try {
+        	JPushClient jPushClient = jPushClientMap.get(appId);
+        	if(Objects.nonNull(jPushClient)) {
+        		jPushClient.deleteAlias(alias, DeviceType.Android.value());
+            	jPushClient.deleteAlias(alias, DeviceType.IOS.value());
+        	}
+        } catch (APIConnectionException e) {
+            LOG.error("清理Alias异常", e);
+        } catch (APIRequestException e) {
+            LOG.error("清理Alias异常", e);
+        }
+    }
 
 	@Override
 	public void destroy() throws Exception {
-		jPushClient.close();
+		try {
+			jPushClient.close();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		for (JPushClientExt jPushClientExt : jPushClientMap.values()) {
+			try {
+				jPushClientExt.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
     
 }

@@ -15,21 +15,26 @@
  */
 package cn.jpush.spring.boot;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import cn.jiguang.common.ClientConfig;
+import cn.jiguang.common.connection.HttpProxy;
+import cn.jpush.api.JPushClient;
 
-import org.springframework.context.annotation.Import;
+public class JPushClientExt extends JPushClient {
 
-@Deprecated
-@Target({ ElementType.TYPE })
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-@Inherited
-@Import({ JPushAutoConfiguration.class })
-public @interface EnableJPush {
-
+	private final String appId;
+	
+	public JPushClientExt(String appId, String appKey, String masterSecret) {
+		super(masterSecret, appKey);
+		this.appId = appId;
+	}
+	
+	public JPushClientExt(String appId, String appKey, String masterSecret, HttpProxy proxy, ClientConfig conf) {
+		super(masterSecret, appKey, proxy, conf);
+		this.appId = appId;
+	}
+	
+	public String getAppId() {
+		return appId;
+	}
+	
 }
