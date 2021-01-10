@@ -14,7 +14,7 @@ Spring Boot Starter For JPush
 <dependency>
 	<groupId>com.github.hiwepy</groupId>
 	<artifactId>jpush-spring-boot-starter</artifactId>
-	<version>${project.version}</version>
+	<version>1.0.1.RELEASE</version>
 </dependency>
 ```
 
