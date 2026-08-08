@@ -32,6 +32,12 @@ import cn.jpush.api.push.PushResult;
 import cn.jpush.api.push.model.PushPayload;
 import cn.jpush.api.push.model.audience.Audience;
 
+/**
+ * Convenience template for sending JPush notifications through the primary client and any registered
+ * slave clients, closing all clients on bean destruction.
+ * @author [@Loong Wan](https://github.com/loong10k)
+ * @since 1.0.0
+ */
 public class JPushTemplate implements DisposableBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(JPushTemplate.class);
@@ -39,6 +45,7 @@ public class JPushTemplate implements DisposableBean {
     private ConcurrentHashMap<String, JPushClientExt> jPushClientMap;
     private boolean production;
 
+    /** Create a template with the primary client and slave clients keyed by application id. @param jPushClient primary JPush client @param clients slave clients @param prod iOS production-environment flag */
     public JPushTemplate(JPushClient jPushClient, List<JPushClientExt> clients, boolean prod) {
         this.jPushClient = jPushClient;
         this.jPushClientMap = new ConcurrentHashMap<>();
@@ -48,26 +55,32 @@ public class JPushTemplate implements DisposableBean {
         this.production = prod;
     }
 
+    /** Return the primary JPush client. @return the primary client */
     public JPushClient getjPushClient() {
         return jPushClient;
     }
-    
+
+	/** Return the slave clients keyed by application id. @return the slave client map */
 	public Map<String, JPushClientExt> getjPushClientMap() {
 		return jPushClientMap;
 	}
-    
+
+    /** Send a push to all audiences using the primary client. @param pushObject push content @return true if the push succeeded */
     public boolean sendPush(PushObject pushObject) {
 		return this.sendPush(Audience.all(), pushObject);
     }
-    
+
+    /** Send a push to the given aliases using the primary client. @param alias target aliases @param pushObject push content @return true if the push succeeded */
     public boolean sendPush(List<String> alias, PushObject pushObject) {
 		return this.sendPush(Audience.alias(alias), pushObject);
     }
-    
+
+    /** Send a push to the given tags using the primary client. @param tags target tags @param pushObject push content @return true if the push succeeded */
     public boolean sendPushByTag(List<String> tags, PushObject pushObject) {
 		return this.sendPush(Audience.tag(tags), pushObject);
 	}
-    
+
+    /** Send a push to the given audience using the primary client. @param audience target audience @param pushObject push content @return true if the push succeeded */
     public boolean sendPush(Audience audience, PushObject pushObject) {
     	
         PushPayload payload = JPushNotifications.buildPushPayloadForAndroidAndIos(production, audience, pushObject);
@@ -89,18 +102,22 @@ public class JPushTemplate implements DisposableBean {
         return false;
     }
     
+    /** Send a push to all audiences using the slave client for the given application id. @param appId local application id @param pushObject push content @return true if the push succeeded */
     public boolean sendPush(String appId, PushObject pushObject) {
 		return this.sendPush(appId, Audience.all(), pushObject);
     }
-    
+
+    /** Send a push to the given aliases using the slave client for the given application id. @param appId local application id @param alias target aliases @param pushObject push content @return true if the push succeeded */
     public boolean sendPush(String appId, List<String> alias, PushObject pushObject) {
 		return this.sendPush(appId, Audience.alias(alias), pushObject);
     }
-    
+
+    /** Send a push to the given tags using the slave client for the given application id. @param appId local application id @param tags target tags @param pushObject push content @return true if the push succeeded */
     public boolean sendPushByTag(String appId, List<String> tags, PushObject pushObject) {
 		return this.sendPush(appId, Audience.tag(tags), pushObject);
 	}
-    
+
+    /** Send a push to the given audience using the slave client for the given application id. @param appId local application id @param audience target audience @param pushObject push content @return true if the push succeeded */
     public boolean sendPush(String appId, Audience audience, PushObject pushObject) {
     	JPushClient jPushClient = jPushClientMap.get(appId);
     	if(Objects.nonNull(jPushClient)) {
@@ -124,6 +141,7 @@ public class JPushTemplate implements DisposableBean {
         return false;
     }
 
+    /** Delete the given alias for both Android and iOS using the primary client. @param alias the alias to clear */
     public void clearAlias(String alias) {
         try {
             jPushClient.deleteAlias(alias, DeviceType.Android.value());
@@ -134,7 +152,8 @@ public class JPushTemplate implements DisposableBean {
             LOG.error("清理Alias异常", e);
         }
     }
-    
+
+    /** Delete the given alias for both Android and iOS using the slave client for the given application id. @param appId local application id @param alias the alias to clear */
     public void clearAlias(String appId, String alias) {
         try {
         	JPushClient jPushClient = jPushClientMap.get(appId);
@@ -149,6 +168,7 @@ public class JPushTemplate implements DisposableBean {
         }
     }
 
+	/** Close the primary and all slave JPush clients on bean destruction. @throws Exception if a client cannot be closed */
 	@Override
 	public void destroy() throws Exception {
 		try {

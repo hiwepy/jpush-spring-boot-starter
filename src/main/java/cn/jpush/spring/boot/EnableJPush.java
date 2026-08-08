@@ -24,6 +24,12 @@ import java.lang.annotation.Target;
 
 import org.springframework.context.annotation.Import;
 
+/**
+ * Enables the JPush integration by importing {@link JPushAutoConfiguration}.
+ * @author [@Loong Wan](https://github.com/loong10k)
+ * @since 1.0.0
+ * @deprecated auto-configuration is now applied automatically; this annotation is no longer required
+ */
 @Deprecated
 @Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)

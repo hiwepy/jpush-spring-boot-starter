@@ -20,30 +20,31 @@ import java.util.Map;
 
 import lombok.Data;
 
+/**
+ * Representation of a push-notification payload carrying alert text, message content, iOS sound/badge
+ * settings, optional extra key/value entries and the target local application id.
+ * @author [@Loong Wan](https://github.com/loong10k)
+ * @since 1.0.0
+ */
 @Data
 public class PushObject {
 
-	/**
-	 * The ID of one application on Local System.
-	 */
+	/** The ID of one application on the local system. */
 	private String appId;
 
-	/**
-	 * 通知信息
-	 */
+	/** Notification alert text. */
 	private String alert;
 
-	/**
-	 * 消息内容
-	 */
+	/** Custom message content. */
 	private String msgContent;
 
-	// ios声音
+	/** iOS notification sound; defaults to "happy". */
 	private String sound = "happy";
 
-	// ios右上角条数
+	/** iOS app icon badge number; defaults to 1. */
 	private int badge = 1;
 
+	/** Extra key/value entries delivered with the notification. */
 	Map<String, Object> extras = new HashMap<String, Object>();
 
 }

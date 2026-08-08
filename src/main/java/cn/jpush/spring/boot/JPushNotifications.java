@@ -29,8 +29,14 @@ import cn.jpush.api.push.model.notification.IosNotification;
 import cn.jpush.api.push.model.notification.Notification;
 import cn.jpush.api.push.model.notification.PlatformNotification;
 
+/**
+ * Helper for building JPush {@link Notification} and {@link PushPayload} objects for Android and iOS.
+ * @author [@Loong Wan](https://github.com/loong10k)
+ * @since 1.0.0
+ */
 public class JPushNotifications {
 
+	/** Build a {@link Notification} combining a common alert with one or more platform-specific notifications. @param alert common alert content @param notifications platform-specific notifications @return a Notification */
 	public static Notification buildNotification(Object alert, PlatformNotification... notifications) {
 		Notification.Builder builder = Notification.newBuilder().setAlert(alert);
 		for (PlatformNotification platformNotification : notifications) {
@@ -39,6 +45,7 @@ public class JPushNotifications {
 		return builder.build();
     }
 
+    /** Build a {@link PushPayload} targeting Android and iOS with alert, message, extras, badge/sound and the production flag. @param production true for the iOS APNs production environment, false for development @param audience the push audience @param pushObject the push content @return a PushPayload */
     public static PushPayload buildPushPayloadForAndroidAndIos(boolean production, Audience audience,PushObject pushObject) {
         AndroidNotification.Builder androidBuilder = AndroidNotification.newBuilder();
         IosNotification.Builder iosBuilder = IosNotification.newBuilder();
