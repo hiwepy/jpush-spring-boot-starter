@@ -21,7 +21,7 @@ import static org.mockito.Mockito.*;
 /**
  * Tests for JPush starter components.
  *
- * @author [@Loong Wan](https://github.com/loong10k)
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
  * @since 1.0.0
  */
 public class JPushTest {

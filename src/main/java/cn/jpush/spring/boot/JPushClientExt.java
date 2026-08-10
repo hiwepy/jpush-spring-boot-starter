@@ -22,7 +22,7 @@ import cn.jpush.api.JPushClient;
 /**
  * Extension of {@link JPushClient} that also carries the local application identifier, allowing slave
  * JPush clients to be keyed and looked up by app id within the {@link JPushTemplate}.
- * @author [@Loong Wan](https://github.com/loong10k)
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
  * @since 1.0.0
  */
 public class JPushClientExt extends JPushClient {

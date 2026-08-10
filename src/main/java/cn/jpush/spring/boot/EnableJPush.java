@@ -26,7 +26,7 @@ import org.springframework.context.annotation.Import;
 
 /**
  * Enables the JPush integration by importing {@link JPushAutoConfiguration}.
- * @author [@Loong Wan](https://github.com/loong10k)
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
  * @since 1.0.0
  * @deprecated auto-configuration is now applied automatically; this annotation is no longer required
  */

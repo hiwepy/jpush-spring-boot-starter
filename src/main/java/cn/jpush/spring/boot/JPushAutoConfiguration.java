@@ -18,7 +18,7 @@ import cn.jpush.spring.boot.JPushProperties.JPushSlaveClientConfig;
 /**
  * Auto-configuration for the JPush push-notification integration, exposing the JPush client config,
  * the primary {@link JPushClient} and the {@link JPushTemplate} helper (including slave clients).
- * @author [@Loong Wan](https://github.com/loong10k)
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
  * @since 1.0.0
  */
 @Configuration

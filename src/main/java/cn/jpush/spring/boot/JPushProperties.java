@@ -11,7 +11,7 @@ import lombok.Data;
  * Configuration properties for the JPush integration, bound to the {@code jpush.*} prefix.
  * <p>Holds the primary application credentials, an optional HTTP proxy, the iOS production/development
  * toggle and the list of additional slave client configurations.</p>
- * @author [@Loong Wan](https://github.com/loong10k)
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
  * @since 1.0.0
  */
 @ConfigurationProperties(JPushProperties.PREFIX)

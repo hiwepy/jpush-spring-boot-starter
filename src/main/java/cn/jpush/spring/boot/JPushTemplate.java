@@ -35,7 +35,7 @@ import cn.jpush.api.push.model.audience.Audience;
 /**
  * Convenience template for sending JPush notifications through the primary client and any registered
  * slave clients, closing all clients on bean destruction.
- * @author [@Loong Wan](https://github.com/loong10k)
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
  * @since 1.0.0
  */
 public class JPushTemplate implements DisposableBean {

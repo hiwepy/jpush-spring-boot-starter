@@ -23,7 +23,7 @@ import lombok.Data;
 /**
  * Representation of a push-notification payload carrying alert text, message content, iOS sound/badge
  * settings, optional extra key/value entries and the target local application id.
- * @author [@Loong Wan](https://github.com/loong10k)
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
  * @since 1.0.0
  */
 @Data

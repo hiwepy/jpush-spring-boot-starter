@@ -31,7 +31,7 @@ import cn.jpush.api.push.model.notification.PlatformNotification;
 
 /**
  * Helper for building JPush {@link Notification} and {@link PushPayload} objects for Android and iOS.
- * @author [@Loong Wan](https://github.com/loong10k)
+ * @author <a href="https://github.com/loong10k">Loong Wan</a>
  * @since 1.0.0
  */
 public class JPushNotifications {
